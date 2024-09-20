@@ -1,0 +1,68 @@
+version: '3.8'
+
+networks:
+  msPOC_network:
+    driver: bridge
+
+services:
+  zookeeper:
+    image: zookeeper:latest
+    ports:
+      - "2181:2181"
+    networks:
+      - msPOC_network
+
+  kafka:
+    image: apache/kafka:latest
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_BROKER_ID=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/apache/kafka
+    networks:
+      - msPOC_network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - msPOC_network
+
+  producer:
+    build:
+      context: ./producer
+    depends_on:
+      - kafka
+      - mongodb
+    ports:
+      - "8085:8085"
+    networks:
+      - msPOC_network
+
+  consumer1:
+    build:
+      context: ./consumer1
+    depends_on:
+      - kafka
+      - mongodb
+    networks:
+      - msPOC_network
+
+  consumer2:
+    build:
+      context: ./consumer2
+    depends_on:
+      - kafka
+      - mongodb
+    networks:
+      - msPOC_network
+
+volumes:
+  kafka-data:

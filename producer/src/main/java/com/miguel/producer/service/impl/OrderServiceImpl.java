@@ -17,7 +17,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @SuppressWarnings("null")
     public void sendMessageOrder(OrderDTO order) {
-        int partition = new Random().nextInt(2);
+        int partition = new Random().nextInt(2) ;
         System.out.println("Sent message to partition: " + partition);
         System.out.println("Sending Order: " + order.name());
         kafkaTemplateOrder.send("msPOC-order-processed", partition, null, order);
